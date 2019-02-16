@@ -31,6 +31,10 @@ import org.apache.commons.logging.LogFactory;
 public class ActiveMqTestUtils {
 
 
+	// this is for the
+	// 		vm://localhost?broker.persistent=true
+	// usecase
+	//
 	public static void prepare() {
 		log.info("Refreshing ActiveMQ data directory.");
 		File activeMqTempDir = new File("activemq-data");
