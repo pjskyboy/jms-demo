@@ -64,20 +64,5 @@
     <jms:outbound-channel-adapter id="rightChannelOutboundJMSAdapter" connection-factory="jmsConnectionFactory"
                                   destination="rightQueue" channel="right"/>
 
-    <jms:inbound-channel-adapter id="leftMQChannelAdapter" connection-factory="jmsConnectionFactory"
-                                 destination="leftQueue" channel="leftJMSChannel"/>
-    <jms:inbound-channel-adapter id="rightMQChannelAdapter" connection-factory="jmsConnectionFactory"
-                                 destination="rightQueue" channel="rightJMSChannel"/>
-    <channel id="leftJMSChannel">
-        <queue/>
-        <interceptors>
-            <wire-tap channel="logger"/>
-        </interceptors>
-    </channel>
-    <channel id="rightJMSChannel">
-        <queue/>
-        <interceptors>
-            <wire-tap channel="logger"/>
-        </interceptors>
-    </channel>
+
 </beans:beans>

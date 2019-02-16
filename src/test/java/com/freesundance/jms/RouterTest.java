@@ -32,7 +32,7 @@ import org.springframework.integration.support.MessageBuilder;
 public class RouterTest {
 
     private final static String[] configFilesChannelAdapterDemo = {
-            "/META-INF/spring/integration/router.xml"
+            "/META-INF/spring/integration/router-test.xml"
     };
 
     final static GenericXmlApplicationContext applicationContext = new GenericXmlApplicationContext(configFilesChannelAdapterDemo);
