@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/integration"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:jms="http://www.springframework.org/schema/integration/jms"
+             xmlns:stream="http://www.springframework.org/schema/integration/stream"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans
+			http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/integration
+			http://www.springframework.org/schema/integration/spring-integration.xsd
+			http://www.springframework.org/schema/integration/jms
+			http://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd
+			http://www.springframework.org/schema/integration/stream
+			http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd">
+
+    <beans:import resource="common.xml"/>
+
+    <logging-channel-adapter id="logger" log-full-message="true"/>
+
+    <stream:stdin-channel-adapter id="stdin" channel="stdinToJmsChannel"/>
+
+    <channel id="stdinToJmsChannel">
+        <interceptors>
+            <wire-tap channel="logger"/>
+        </interceptors>
+    </channel>
+
+    <jms:outbound-channel-adapter id="jmsRequestQueueAdapter" channel="stdinToJmsChannel" destination="requestQueue"/>
+
+    <jms:inbound-channel-adapter id="inboundMQChannelAdapter" connection-factory="jmsConnectionFactory"
+                                        destination="requestQueue" channel="inboundJMSChannel"/>
+
+    <channel id="inboundJMSChannel">
+        <interceptors>
+            <wire-tap channel="logger"/>
+        </interceptors>
+    </channel>
+
+    <beans:bean id="myRouter" class="com.freesundance.jms.Router"/>
+
+    <router ref="myRouter" input-channel="inboundJMSChannel" method="determineMessageTargetChannel"
+            default-output-channel="discardChannel"/>
+
+    <channel id="left">
+        <interceptors>
+            <wire-tap channel="logger"/>
+        </interceptors>
+    </channel>
+    <channel id="right">
+        <interceptors>
+            <wire-tap channel="logger"/>
+        </interceptors>
+    </channel>
+    <channel id="discardChannel">
+        <queue/>
+        <interceptors>
+            <wire-tap channel="logger"/>
+        </interceptors>
+    </channel>
+
+    <jms:outbound-channel-adapter id="leftChannelOutboundJMSAdapter" connection-factory="jmsConnectionFactory"
+                                        destination="leftQueue" channel="left"/>
+
+    <jms:outbound-channel-adapter id="rightChannelOutboundJMSAdapter" connection-factory="jmsConnectionFactory"
+                                  destination="rightQueue" channel="right"/>
+
+    <jms:inbound-channel-adapter id="leftMQChannelAdapter" connection-factory="jmsConnectionFactory"
+                                 destination="leftQueue" channel="leftJMSChannel"/>
+    <jms:inbound-channel-adapter id="rightMQChannelAdapter" connection-factory="jmsConnectionFactory"
+                                 destination="rightQueue" channel="rightJMSChannel"/>
+    <channel id="leftJMSChannel">
+        <queue/>
+        <interceptors>
+            <wire-tap channel="logger"/>
+        </interceptors>
+    </channel>
+    <channel id="rightJMSChannel">
+        <queue/>
+        <interceptors>
+            <wire-tap channel="logger"/>
+        </interceptors>
+    </channel>
+</beans:beans>
