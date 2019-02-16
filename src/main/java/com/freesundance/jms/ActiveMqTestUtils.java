@@ -17,6 +17,7 @@ package com.freesundance.jms;
 
 import java.io.File;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -26,12 +27,12 @@ import org.apache.commons.logging.LogFactory;
  * @author Gary Russell
  *
  */
+@Slf4j
 public class ActiveMqTestUtils {
 
-	private static final Log LOGGER = LogFactory.getLog(ActiveMqTestUtils.class);
 
 	public static void prepare() {
-		LOGGER.info("Refreshing ActiveMQ data directory.");
+		log.info("Refreshing ActiveMQ data directory.");
 		File activeMqTempDir = new File("activemq-data");
 		deleteDir(activeMqTempDir);
 	}

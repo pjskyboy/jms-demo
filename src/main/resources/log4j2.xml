@@ -10,9 +10,11 @@
 			<AppenderRef ref="Console" />
 		</Root>
 		<Logger name="com.freesundance" level="info" />
-		<Logger name="org.springframework" level="info" />
+		<Logger name="org.springframework" level="warn" />
 		<Logger name="org.springframework.integration" level="warn" />
-		<Logger name="org.springframework.integration.channel" level="debug" />
-		<Logger name="org.springframework.integration.handler" level="INFO" />
+		<Logger name="org.springframework.integration.channel" level="warn" />
+		<Logger name="org.apache.activemq" level="warn" />
+		<!-- wiretap logging -->
+		<Logger name="org.springframework.integration.handler" level="warn" />
 	</Loggers>
 </Configuration>
