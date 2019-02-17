@@ -18,5 +18,5 @@
     <logger name="org.springframework.integration.channel" level="warn" />
     <logger name="org.apache.activemq" level="warn" />
     <!-- wiretap logging -->
-    <logger name="org.springframework.integration.handler" level="warn" />
+    <logger name="org.springframework.integration.handler" level="info" />
 </configuration>

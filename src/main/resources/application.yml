@@ -1,1 +1,3 @@
-inboundQueue: queue.inbound
+spring:
+  activemq:
+    in-memory: true

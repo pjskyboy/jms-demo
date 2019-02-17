@@ -17,56 +17,65 @@
 package com.freesundance.jms;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.ExitCodeGenerator;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.event.EventListener;
+import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 
-/**
- * A simple bootstrap main() method for starting a pair of JMS Channel
- * Adapters. Text entered in the console will go through an outbound
- * JMS Channel Adapter from which it is sent to a JMS Destination.
- * An inbound JMS Channel Adapter is listening to that same JMS
- * Destination and will echo the result in the console.
- * <p>
- * See the configuration in the three XML files that are referenced below.
- *
- * @author Mark Fisher
- * @author Gunnar Hillert
- * @author Gary Russell
- */
 @SpringBootApplication
+@ImportResource("classpath:/META-INF/spring/integration/router-si.xml")
 @Slf4j
 public class Application {
 
-    private final static String[] configFilesRouterDemo = {
-            "/META-INF/spring/integration/router.xml"
-    };
+    private final ApplicationContext applicationContext;
 
-    public static void main(String[] args) {
-
-        log.info("=========================================================");
-        log.info("                                                         ");
-        log.info("   Welcome to the Spring Integration JMS Sample!         ");
-        log.info("                                                         ");
-        log.info("=========================================================");
-
-        log.info("    Loading Router Demo...");
-        ApplicationContext applicationContext = new ClassPathXmlApplicationContext(configFilesRouterDemo, Application.class);
-
-        MessageChannel messageChannel = (MessageChannel) applicationContext.getBean("stdinToJmsChannel");
-
-        log.info("******************************************************************");
-        log.info("GO LEFT!");
-        messageChannel.send(MessageBuilder.withPayload("left").build());
-        log.info("******************************************************************");
-        log.info("GO RIGHT!");
-        messageChannel.send(MessageBuilder.withPayload("right").build());
-        log.info("******************************************************************");
-        log.info("GO DISCARD!");
-        messageChannel.send(MessageBuilder.withPayload("discard").build());
-        log.info("******************************************************************");
+    @Autowired
+    public Application(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
+    @EventListener(ApplicationReadyEvent.class)
+    public void playMessages() {
+        log.info("******************************************************************");
+        log.info("GO LEFT!");
+        sendPayloadAndVerify(applicationContext, "message for left", "leftJMSChannel");
+        log.info("******************************************************************");
+        log.info("GO RIGHT!");
+        sendPayloadAndVerify(applicationContext, "message for right", "rightJMSChannel");
+        log.info("******************************************************************");
+        log.info("GO DISCARD!");
+        sendPayloadAndVerify(applicationContext, "discard me", "discardChannel");
+        log.info("******************************************************************");
+
+        log.warn("Shutting down the application...");
+        SpringApplication.exit(applicationContext, () -> 0);
+    }
+
+     public static void main(String[] args) {
+
+        log.info("=========================================================");
+        log.info("   Simple JMS router                                     ");
+        log.info("=========================================================");
+
+        ActiveMQUtils.prepare();
+        SpringApplication.run(Application.class, args);
+    }
+
+    private void sendPayloadAndVerify(final ApplicationContext applicationContext, final String payload, final String expectedChannel) {
+        MessageChannel messageChannel = (MessageChannel) applicationContext.getBean("sendToJMSChannel");
+        messageChannel.send(MessageBuilder.withPayload(payload).build());
+        QueueChannel queueChannel = applicationContext.getBean(expectedChannel, QueueChannel.class);
+        @SuppressWarnings("unchecked")
+        Message<String> reply = (Message<String>) queueChannel.receive(5000);
+        log.info("expectedChannel={} reply={}", expectedChannel, reply);
+    }
 }
