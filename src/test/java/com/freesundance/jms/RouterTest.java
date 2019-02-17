@@ -18,64 +18,46 @@ package com.freesundance.jms;
 
 import org.junit.*;
 
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
-/**
- * @author Gunnar Hillert
- */
 public class RouterTest {
 
-    private final static String[] configFilesChannelAdapterDemo = {
-            "/META-INF/spring/integration/router-test.xml"
-    };
-
-    final static GenericXmlApplicationContext applicationContext = new GenericXmlApplicationContext(configFilesChannelAdapterDemo);
-
-    @BeforeClass
-    public static void beforeClass() {
-        ActiveMqTestUtils.prepare();
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        applicationContext.close();
+    @Test
+    public void routeLeftTest() {
+        Router unit = new Router();
+        Message<String> message = MessageBuilder.withPayload("this contains left").build();
+        Assert.assertEquals("left", unit.determineMessageTargetChannel(message));
     }
 
     @Test
-    public void routerLeftTest() {
-        sendPayloadAndVerify(applicationContext, "left", "leftJMSChannel");
+    public void routeRightTest() {
+        Router unit = new Router();
+        Message<String> message = MessageBuilder.withPayload("go right now!").build();
+        Assert.assertEquals("right", unit.determineMessageTargetChannel(message));
     }
 
     @Test
-    public void routerRightTest() {
-        sendPayloadAndVerify(applicationContext, "right", "rightJMSChannel");
-    }
-
-    @Test
-    public void routerDiscardTest() {
-        sendPayloadAndVerify(applicationContext, "discard", "discardChannel");
+    public void routeDiscardTest() {
+        Router unit = new Router();
+        Message<String> message = MessageBuilder.withPayload("blah").build();
+        Assert.assertNull(unit.determineMessageTargetChannel(message));
     }
 
     @Test
     public void routerLeftRightGoesLeftTest() {
-        sendPayloadAndVerify(applicationContext, "leftANDright", "leftJMSChannel");
-    }
-
-
-    private void sendPayloadAndVerify(final ApplicationContext applicationContext, final String payload, final String readChannel) {
-        MessageChannel messageChannel = (MessageChannel) applicationContext.getBean("stdinToJmsChannel");
-        messageChannel.send(MessageBuilder.withPayload(payload).build());
-        QueueChannel queueChannel = applicationContext.getBean(readChannel, QueueChannel.class);
-        @SuppressWarnings("unchecked")
-        Message<String> reply = (Message<String>) queueChannel.receive(20000);
-        Assert.assertNotNull(reply);
-        String out = reply.getPayload();
-        Assert.assertEquals(payload, out);
+        Router unit = new Router();
+        Message<String> message = MessageBuilder.withPayload("left or right?").build();
+        Assert.assertEquals("left", unit.determineMessageTargetChannel(message));
     }
 }

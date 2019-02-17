@@ -28,29 +28,30 @@ import org.apache.commons.logging.LogFactory;
  *
  */
 @Slf4j
-public class ActiveMqTestUtils {
+class ActiveMQUtils {
 
 
 	// this is for the
 	// 		vm://localhost?broker.persistent=true
 	// usecase
 	//
-	public static void prepare() {
+	static void prepare() {
 		log.info("Refreshing ActiveMQ data directory.");
 		File activeMqTempDir = new File("activemq-data");
 		deleteDir(activeMqTempDir);
 	}
 
-	private static void deleteDir(File directory){
+	private static void deleteDir(final File directory){
 		if (directory.exists()){
 			String[] children = directory.list();
 			if (children != null){
-				for (int i=0; i < children.length; i++) {
-					deleteDir(new File(directory, children[i]));
+				for (String child : children) {
+					deleteDir(new File(directory, child));
 				}
 			}
 		}
-		directory.delete();
+		if (!directory.delete()) {
+			throw new RuntimeException(String.format("Unable to delete directory=%s", directory));
+		}
 	}
-
 }
