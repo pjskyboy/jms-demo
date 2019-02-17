@@ -18,7 +18,7 @@
 	</bean>
 
 	<bean id="requestQueue" class="org.apache.activemq.command.ActiveMQQueue">
-		<constructor-arg value="queue.inbound"/>
+		<constructor-arg value="${inboundQueue}"/>
 	</bean>
 
 	<bean id="leftQueue" class="org.apache.activemq.command.ActiveMQQueue">
